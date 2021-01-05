@@ -12,15 +12,14 @@ using System.Threading.Tasks;
 
 namespace OSC2MEETER {
 	class Program {
-
+        
 
         static void Main(string[] args) {
 
             VoicemeeterRemote remote = new VoicemeeterRemote();
             remote.Login();
 
-            Console.WriteLine(remote.GetVMType());
-            Console.WriteLine(remote.GetVMVersion());
+            Console.WriteLine("Successfully connect to " + remote.GetVMType() + " version: " + remote.GetVMVersion());
 
             remote.Logout();
 
