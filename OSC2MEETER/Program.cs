@@ -12,27 +12,34 @@ using System.Threading.Tasks;
 
 namespace OSC2MEETER {
 	class Program {
-        
+
+        static VoicemeeterRemote remote = new VoicemeeterRemote();
+
+        protected static void myHandler(object sender, ConsoleCancelEventArgs args) {
+            remote.Logout();
+
+            Console.WriteLine("Exiting");
+            System.Environment.Exit(0);
+        }
 
         static void Main(string[] args) {
-
-            VoicemeeterRemote remote = new VoicemeeterRemote();
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);
             remote.Login();
 
             Console.WriteLine("Successfully connect to " + remote.GetVMType() + " version: " + remote.GetVMVersion());
             Console.WriteLine(remote.GetParameterFloat("Strip[0].gain"));
             Console.WriteLine(remote.GetParameterStringA("Bus[0].device.name"));
 
-            for(int i=0; i<10; i++) { 
+            while(true){ 
                 remote.IsParametersDirty();
-                Console.WriteLine(remote.GetParameterStringA("Bus[0].device.name"));
-                System.Threading.Thread.Sleep(100);
+                Console.WriteLine(remote.getLevel(VoicemeeterLevelType.OUTPUT, VoicemeeterChannels.VOICEMEETER_POATATO_OUTPUT_A1_01));
+                System.Threading.Thread.Sleep(10);
             }
 
            
-            remote.Logout();
+            //remote.Logout();
 
-            Console.ReadLine();
+            //Console.ReadLine();
         }
 	}
 }
