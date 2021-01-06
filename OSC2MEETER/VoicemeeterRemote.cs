@@ -24,15 +24,28 @@ namespace VoicemeeterRemote {
     }
 
     public class VoicemeeterType {
-        private VoicemeeterType(string value) { Value = value; }
+        private VoicemeeterType(string value, int physicalCount , int virtualCount, int physicalInputChannelCount, int physicalOutputChannelCount, int virtualChannelCount) { 
+            Value = value;
+            PhysicalCount = physicalCount;
+            VirtualCount = virtualCount;
+            PhysicalInputChannelCount = physicalInputChannelCount;
+            PhysicalOutputChannelCount = physicalOutputChannelCount;
+            VirtualChannelCount = virtualChannelCount;
+        }
 
         public string Value { get; set; }
+        public int PhysicalCount { get; set; }
+        public int VirtualCount { get; set; }
+        public int PhysicalInputChannelCount { get; set; }
+        public int PhysicalOutputChannelCount { get; set; }
+        public int VirtualChannelCount { get; set; }
+        
         override public string ToString() { return this.Value; }
 
-        public static VoicemeeterType VOICEMEETER         { get { return new VoicemeeterType("Voicemeeter"); } }
-        public static VoicemeeterType VOICEMEETER_BANANA  { get { return new VoicemeeterType("Voicemeeter Banana"); } }
-        public static VoicemeeterType VOICEMEETER_POATATO { get { return new VoicemeeterType("Voicemeeter Poatato"); } }
-        public static VoicemeeterType VOICEMEETER_UNKNOWN { get { return new VoicemeeterType("Unknown Voicemeeter"); } }
+        public static VoicemeeterType VOICEMEETER         { get { return new VoicemeeterType("Voicemeeter",2,1,2,2,8); } }
+        public static VoicemeeterType VOICEMEETER_BANANA  { get { return new VoicemeeterType("Voicemeeter Banana",3,2,2,8,8); } }
+        public static VoicemeeterType VOICEMEETER_POATATO { get { return new VoicemeeterType("Voicemeeter Poatato",5,3,2,8,8); } }
+        public static VoicemeeterType VOICEMEETER_UNKNOWN { get { return new VoicemeeterType("Unknown Voicemeeter",0,0,0,0,0); } }
     }
     
     enum VoicemeeterLevelType {
