@@ -19,3 +19,6 @@ The `VoicemeeterRemote.cs` file can be copied to any project and used as wrapper
 | Levels                                       | ✅ |
 | AudioCallback                                | ❌ |
 | MacroButtons                                 | ❌ |
+
+## Sreenshots of the TouchOSC layout
+<img src="https://data.thestaticturtle.fr/ShareX/2021/01/07/Screenshot_20210107-002952.jpg" width="200" /> <img src="https://data.thestaticturtle.fr/ShareX/2021/01/07/Screenshot_20210107-002857.jpg" width="200" /> <img src="https://data.thestaticturtle.fr/ShareX/2021/01/07/Screenshot_20210107-002958.jpg" width="200" />
