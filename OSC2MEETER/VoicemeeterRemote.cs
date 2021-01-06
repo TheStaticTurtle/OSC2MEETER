@@ -25,11 +25,22 @@ namespace OSC2MEETER {
         delegate int DVM_GetVoicemeeterType(long* vmType);
         delegate int DVM_GetVoicemeeterVersion(long* vmVersion);
 
+        delegate int DVBVMR_IsParametersDirty();
+        delegate int DVBVMR_GetParameterFloat(string param, float* value);
+        //[UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        delegate int DVBVMR_GetParameterStringA(string param, IntPtr value);
+        delegate int DVBVMR_GetParameterStringW(string param, ushort* value);
+
         DVM_Login VM_Login;
         DVM_LogOut VM_Logout;
         DVM_RunVoicemeeter VM_RunVoicemeeter;
         DVM_GetVoicemeeterType VM_GetVoicemeeterType;
         DVM_GetVoicemeeterVersion VM_GetVoicemeeterVersion;
+
+        DVBVMR_IsParametersDirty VBVMR_IsParametersDirty;
+        DVBVMR_GetParameterFloat VBVMR_GetParameterFloat;
+        DVBVMR_GetParameterStringA VBVMR_GetParameterStringA;
+        DVBVMR_GetParameterStringW VBVMR_GetParameterStringW;
 
         public VoicemeeterRemote() {
             IntPtr Handle = LoadLibrary(@"C:\Program Files (x86)\VB\Voicemeeter\VoicemeeterRemote.dll");
@@ -43,12 +54,17 @@ namespace OSC2MEETER {
             VM_RunVoicemeeter = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_RunVoicemeeter"), typeof(DVM_RunVoicemeeter)) as DVM_RunVoicemeeter;
             VM_GetVoicemeeterType = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_GetVoicemeeterType"), typeof(DVM_GetVoicemeeterType)) as DVM_GetVoicemeeterType;
             VM_GetVoicemeeterVersion = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_GetVoicemeeterVersion"), typeof(DVM_GetVoicemeeterVersion)) as DVM_GetVoicemeeterVersion;
+
+            VBVMR_IsParametersDirty = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_IsParametersDirty"), typeof(DVBVMR_IsParametersDirty)) as DVBVMR_IsParametersDirty;
+            VBVMR_GetParameterFloat = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_GetParameterFloat"), typeof(DVBVMR_GetParameterFloat)) as DVBVMR_GetParameterFloat;
+            VBVMR_GetParameterStringA = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_GetParameterStringA"), typeof(DVBVMR_GetParameterStringA)) as DVBVMR_GetParameterStringA;
+            VBVMR_GetParameterStringW = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_GetParameterStringW"), typeof(DVBVMR_GetParameterStringW)) as DVBVMR_GetParameterStringW;
         }
 
         public void Login() {
-            int res = VM_Login.Invoke();
-            if (res == -1) throw new ConnectionException("Can not get client");
-            if (res == -2) throw new ConnectionException("Unexpected login (logout was excepted before");
+            int rep = VM_Login.Invoke();
+            if (rep == -1) throw new ConnectionException("Can not get client");
+            if (rep == -2) throw new ConnectionException("Unexpected login (logout was excepted before");
         }
         public void Logout() {
             int res = VM_Logout.Invoke();
@@ -92,6 +108,48 @@ namespace OSC2MEETER {
             else if (rep == -1) throw new ConnectionException("Could not get the voicemeeter client");
             else if (rep == -2) throw new ConnectionException("Could not get the server");
             else return "Unknown type";
+        }
+
+        public bool IsParametersDirty() {
+            int rep = VBVMR_IsParametersDirty.Invoke();
+            if (rep == 0)  return true;
+            if (rep == -1) throw new ConnectionException("Can not get client");
+            if (rep == -2) throw new ConnectionException("Unexpected login (logout was excepted before");
+            if (rep == -3) throw new ArgumentException("Unknown parametter");
+            if (rep == -5) throw new StructutreMisMatchException("Unknown parametter");
+            return false;
+        }
+        public float GetParameterFloat(String name) {
+            float res;
+            int rep = VBVMR_GetParameterFloat.Invoke(name, &res);
+            if (rep == 0) return res;
+            if (rep == -1) throw new ConnectionException("Can not get client");
+            if (rep == -2) throw new ConnectionException("Unexpected login (logout was excepted before");
+            if (rep == -3) throw new ArgumentException("Unknown parametter");
+            if (rep == -5) throw new StructutreMisMatchException("Unknown parametter");
+            throw new Exception("Unknown error");
+        }
+        IntPtr getParmStringAResponse = Marshal.AllocHGlobal(512); //I don't know why GetParameterStringA work now, it crashed all evening with the "Access violation" error code whil exiting
+        public string GetParameterStringA(String name) {
+            int rep = VBVMR_GetParameterStringA.Invoke(name, getParmStringAResponse);
+            if (rep == 0) {
+                return Marshal.PtrToStringAnsi((IntPtr)getParmStringAResponse);
+            }
+            if (rep == -1) throw new ConnectionException("Can not get client");
+            if (rep == -2) throw new ConnectionException("Unexpected login (logout was excepted before");
+            if (rep == -3) throw new ArgumentException("Unknown parametter");
+            if (rep == -5) throw new StructutreMisMatchException("Unknown parametter");
+            throw new Exception("Unknown error");
+        }
+        public float GetParameterStringW(String name) {
+            ushort res;
+            int rep = VBVMR_GetParameterStringW.Invoke(name, &res);
+            if (rep == 0) return res;
+            if (rep == -1) throw new ConnectionException("Can not get client");
+            if (rep == -2) throw new ConnectionException("Unexpected login (logout was excepted before");
+            if (rep == -3) throw new ArgumentException("Unknown parametter");
+            if (rep == -5) throw new StructutreMisMatchException("Unknown parametter");
+            throw new Exception("Unknown error");
         }
     }
 }
