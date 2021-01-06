@@ -13,6 +13,7 @@ The `VoicemeeterRemote.cs` file can be copied to any project and is a wrapper ar
 
 | Voicemeeter Remote API Wrapper TodoList      | Status |
 |----------------------------------------------|-----|
+| Login/Logout/Version/Run                     | ✅ |
 | Parametters                                  | ✅ |
 | Levels                                       | ✅ |
 | AudioCallback                                | ❌ |
