@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32;
-using OSC2MEETER.exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +7,34 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace VoicemeeterRemote {
+    class ConnectionException : Exception {
+        public ConnectionException() : base() { }
+        public ConnectionException(string message) : base(message) { }
+        public ConnectionException(string message, Exception inner) : base(message, inner) { }
+    }
+    class NotInstalledException : Exception {
+        public NotInstalledException() : base() { }
+        public NotInstalledException(string message) : base(message) { }
+        public NotInstalledException(string message, Exception inner) : base(message, inner) { }
+    }
+    class StructutreMisMatchException : Exception {
+        public StructutreMisMatchException() : base() { }
+        public StructutreMisMatchException(string message) : base(message) { }
+        public StructutreMisMatchException(string message, Exception inner) : base(message, inner) { }
+    }
+
+    public class VoicemeeterType {
+        private VoicemeeterType(string value) { Value = value; }
+
+        public string Value { get; set; }
+        override public string ToString() { return this.Value; }
+
+        public static VoicemeeterType VOICEMEETER         { get { return new VoicemeeterType("Voicemeeter"); } }
+        public static VoicemeeterType VOICEMEETER_BANANA  { get { return new VoicemeeterType("Voicemeeter Banana"); } }
+        public static VoicemeeterType VOICEMEETER_POATATO { get { return new VoicemeeterType("Voicemeeter Poatato"); } }
+        public static VoicemeeterType VOICEMEETER_UNKNOWN { get { return new VoicemeeterType("Unknown Voicemeeter"); } }
+    }
+    
     enum VoicemeeterLevelType {
         INPUT_PRE = 0,
         INPUT_POST_FADER = 1,
@@ -398,24 +425,24 @@ namespace VoicemeeterRemote {
             else if (rep == -2) throw new ConnectionException("Could not get the server");
             else throw new Exception("Failed to retrive VoiceMeeter version code, err " + rep.ToString());
         }
-        public String GetVMType() {
+        public VoicemeeterType GetVMType() {
             long vmType;
             int rep = VM_GetVoicemeeterType.Invoke(&vmType);
             if (rep == 0) {
                 switch (vmType) {
                     case 1:
-                        return "Voicemeeter";
+                        return VoicemeeterType.VOICEMEETER;
                     case 2:
-                        return "Voicemeeter Banana";
+                        return VoicemeeterType.VOICEMEETER_BANANA;
                     case 3:
-                        return "Voicemeeter Poatato";
+                        return VoicemeeterType.VOICEMEETER_POATATO;
                     default:
-                        return "Unknown type (" + vmType.ToString() + ")";
+                        return VoicemeeterType.VOICEMEETER_UNKNOWN;
                 }
             }
             else if (rep == -1) throw new ConnectionException("Could not get the voicemeeter client");
             else if (rep == -2) throw new ConnectionException("Could not get the server");
-            else return "Unknown type";
+            else return VoicemeeterType.VOICEMEETER_UNKNOWN; ;
         }
 
         public bool IsParametersDirty() {
@@ -465,7 +492,7 @@ namespace VoicemeeterRemote {
             if (rep == -1) throw new ConnectionException("Can not get client");
             if (rep == -2) throw new ConnectionException("Unexpected login (logout was excepted before");
             if (rep == -3) throw new ArgumentException("No level availible");
-            if (rep == -4) throw new ArgumentOutOfRangeException("Channel is out of range for type");
+            if (rep == -4) throw new ArgumentOutOfRangeException("Channel "+channel+" is out of range for type");
             throw new Exception("Unknown error");
         }
         public char[] GetMidiMessage() {
