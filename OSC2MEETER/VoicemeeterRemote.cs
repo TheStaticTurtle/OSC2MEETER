@@ -1,4 +1,5 @@
-﻿using OSC2MEETER.exceptions;
+﻿using Microsoft.Win32;
+using OSC2MEETER.exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OSC2MEETER {
+namespace VoicemeeterRemote {
     enum VoicemeeterLevelType {
         INPUT_PRE = 0,
         INPUT_POST_FADER = 1,
@@ -264,7 +265,9 @@ namespace OSC2MEETER {
 
     }
 
-    unsafe class VoicemeeterRemote {
+    unsafe class Remote {
+        static String RegUnInstallDirKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+        static String InstallerUnInstKey = "VB:Voicemeeter {17359A74-1236-5467}";
 
         [DllImport("kernel32.dll")]
         static extern bool FreeLibrary(IntPtr hModule);
@@ -317,8 +320,30 @@ namespace OSC2MEETER {
         DVBVMR_SetParameters VBVMR_SetParameters;
         DVBVMR_SetParametersW VBVMR_SetParametersW;
 
-        public VoicemeeterRemote() {
-            IntPtr Handle = LoadLibrary(@"C:\Program Files (x86)\VB\Voicemeeter\VoicemeeterRemote.dll");
+
+        static String FindVoiceMeeterDLL() {
+            //return @"C:\Program Files (x86)\VB\Voicemeeter\VoicemeeterRemote.dll";
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(RegUnInstallDirKey+"\\"+InstallerUnInstKey)) {
+                if (key != null) {
+                    Object o = key.GetValue("UninstallString");
+                    if (o != null) {
+                        String ex = o.ToString();
+                        String[] ps = ex.Split('\\');
+                        ps = ps.Take(ps.Count() - 1).ToArray();
+                        String installPath = String.Join("\\", ps);
+                        String dllPath = installPath + "\\VoicemeeterRemote" + (IntPtr.Size == 8 ? "64" : "") + ".dll";
+                        return dllPath;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public Remote() {
+            String dllPath = FindVoiceMeeterDLL();
+            if (dllPath == null) throw new DllNotFoundException("Failed to find the voicemeeter dll");
+
+            IntPtr Handle = LoadLibrary(dllPath);
             if (Handle == IntPtr.Zero) {
                 int errorCode = Marshal.GetLastWin32Error();
                 throw new Exception(string.Format("Failed to load library (ErrorCode: {0})", errorCode));

@@ -6,14 +6,14 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-
+using VoicemeeterRemote;
 
 
 
 namespace OSC2MEETER {
 	class Program {
 
-        static VoicemeeterRemote remote = new VoicemeeterRemote();
+        static VoicemeeterRemote.Remote remote = new VoicemeeterRemote.Remote();
 
         protected static void myHandler(object sender, ConsoleCancelEventArgs args) {
             remote.Logout();
