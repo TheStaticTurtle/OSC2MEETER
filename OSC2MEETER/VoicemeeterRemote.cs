@@ -284,24 +284,38 @@ namespace OSC2MEETER {
 
         delegate int DVBVMR_IsParametersDirty();
         delegate int DVBVMR_GetParameterFloat(string param, float* value);
-        //[UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         delegate int DVBVMR_GetParameterStringA(string param, IntPtr value);
-        delegate int DVBVMR_GetParameterStringW(string param, ushort* value);
-
+        delegate int DVBVMR_GetParameterStringW(string param, IntPtr value);
         delegate int DVBVMR_GetLevel(int nType, int nuChannel, float* res);
+        delegate int DVBVMR_GetMidiMessage(IntPtr buffer, int maxLength);
 
+        delegate int DVBVMR_SetParameterFloat(string param, float value);
+        delegate int DVBVMR_SetParameterStringA(string param, IntPtr value);
+        delegate int DVBVMR_SetParameterStringW(string param, IntPtr value);
+        delegate int DVBVMR_SetParameters(IntPtr script);
+        delegate int DVBVMR_SetParametersW(IntPtr script);
+
+        //Connection
         DVM_Login VM_Login;
         DVM_LogOut VM_Logout;
         DVM_RunVoicemeeter VM_RunVoicemeeter;
         DVM_GetVoicemeeterType VM_GetVoicemeeterType;
         DVM_GetVoicemeeterVersion VM_GetVoicemeeterVersion;
 
+        // Get parameters
         DVBVMR_IsParametersDirty VBVMR_IsParametersDirty;
         DVBVMR_GetParameterFloat VBVMR_GetParameterFloat;
         DVBVMR_GetParameterStringA VBVMR_GetParameterStringA;
         DVBVMR_GetParameterStringW VBVMR_GetParameterStringW;
-
         DVBVMR_GetLevel VBVMR_GetLevel;
+        DVBVMR_GetMidiMessage VBVMR_GetMidiMessage;
+
+        // Set parametters
+        DVBVMR_SetParameterFloat VBVMR_SetParameterFloat;
+        DVBVMR_SetParameterStringA VBVMR_SetParameterStringA;
+        DVBVMR_SetParameterStringW VBVMR_SetParameterStringW;
+        DVBVMR_SetParameters VBVMR_SetParameters;
+        DVBVMR_SetParametersW VBVMR_SetParametersW;
 
         public VoicemeeterRemote() {
             IntPtr Handle = LoadLibrary(@"C:\Program Files (x86)\VB\Voicemeeter\VoicemeeterRemote.dll");
@@ -320,8 +334,14 @@ namespace OSC2MEETER {
             VBVMR_GetParameterFloat = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_GetParameterFloat"), typeof(DVBVMR_GetParameterFloat)) as DVBVMR_GetParameterFloat;
             VBVMR_GetParameterStringA = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_GetParameterStringA"), typeof(DVBVMR_GetParameterStringA)) as DVBVMR_GetParameterStringA;
             VBVMR_GetParameterStringW = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_GetParameterStringW"), typeof(DVBVMR_GetParameterStringW)) as DVBVMR_GetParameterStringW;
-
             VBVMR_GetLevel = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_GetLevel"), typeof(DVBVMR_GetLevel)) as DVBVMR_GetLevel;
+            VBVMR_GetMidiMessage = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_GetMidiMessage"), typeof(DVBVMR_GetMidiMessage)) as DVBVMR_GetMidiMessage;
+
+            VBVMR_SetParameterFloat = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_SetParameterFloat"), typeof(DVBVMR_SetParameterFloat)) as DVBVMR_SetParameterFloat;
+            VBVMR_SetParameterStringA = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_SetParameterStringA"), typeof(DVBVMR_SetParameterStringA)) as DVBVMR_SetParameterStringA;
+            VBVMR_SetParameterStringW = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_SetParameterStringW"), typeof(DVBVMR_SetParameterStringW)) as DVBVMR_SetParameterStringW;
+            VBVMR_SetParameters = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_SetParameters"), typeof(DVBVMR_SetParameters)) as DVBVMR_SetParameters;
+            VBVMR_SetParametersW = Marshal.GetDelegateForFunctionPointer(GetProcAddress(Handle, "VBVMR_SetParametersW"), typeof(DVBVMR_SetParametersW)) as DVBVMR_SetParametersW;
         }
 
         public void Login() {
@@ -393,7 +413,7 @@ namespace OSC2MEETER {
             throw new Exception("Unknown error");
         }
         IntPtr getParmStringAResponse = Marshal.AllocHGlobal(512); //I don't know why GetParameterStringA work now, it crashed all evening with the "Access violation" error code whil exiting
-        public string GetParameterStringA(String name) {
+        public string GetParameterStringASCII(String name) {
             int rep = VBVMR_GetParameterStringA.Invoke(name, getParmStringAResponse);
             if (rep == 0) {
                 return Marshal.PtrToStringAnsi((IntPtr)getParmStringAResponse);
@@ -404,18 +424,16 @@ namespace OSC2MEETER {
             if (rep == -5) throw new StructutreMisMatchException("Unknown parametter");
             throw new Exception("Unknown error");
         }
-        public float GetParameterStringW(String name) {
-            ushort res;
-            int rep = VBVMR_GetParameterStringW.Invoke(name, &res);
-            if (rep == 0) return res;
+        public string GetParameterStringUNICODE(String name) {
+            int rep = VBVMR_GetParameterStringW.Invoke(name, getParmStringAResponse);
+            if (rep == 0) return Marshal.PtrToStringUni((IntPtr)getParmStringAResponse);
             if (rep == -1) throw new ConnectionException("Can not get client");
             if (rep == -2) throw new ConnectionException("Unexpected login (logout was excepted before");
             if (rep == -3) throw new ArgumentException("Unknown parametter");
             if (rep == -5) throw new StructutreMisMatchException("Unknown parametter");
             throw new Exception("Unknown error");
         }
-
-        public float getLevel(VoicemeeterLevelType type, VoicemeeterChannels channel) {
+        public float GetLevel(VoicemeeterLevelType type, VoicemeeterChannels channel) {
             float res;
             int rep = VBVMR_GetLevel.Invoke((int)type, (int)channel, &res);
             if (rep == 0) return res;
@@ -425,5 +443,55 @@ namespace OSC2MEETER {
             if (rep == -4) throw new ArgumentOutOfRangeException("Channel is out of range for type");
             throw new Exception("Unknown error");
         }
+        public char[] GetMidiMessage() {
+            throw new NotImplementedException("");
+        }
+
+        public void SetParameterFloat(String name, float value) {
+            int rep = VBVMR_SetParameterFloat.Invoke(name, value);
+            if (rep == 0) return;
+            if (rep == -1) throw new ArgumentException("Unknown error");
+            if (rep == -2) throw new ConnectionException("No server");
+            if (rep == -3) throw new ArgumentException("Unknown parametter");
+            throw new Exception("Unknown error");
+        }
+        public void SetParameterStringASCII(String name, String value) {
+            int rep = VBVMR_SetParameterStringA.Invoke(name, Marshal.StringToHGlobalAnsi(value));
+            if (rep == 0) return;
+            if (rep == -1) throw new ArgumentException("Unknown error");
+            if (rep == -2) throw new ConnectionException("No server");
+            if (rep == -3) throw new ArgumentException("Unknown parametter");
+            throw new Exception("Unknown error");
+        }
+        public void SetParameterStringUNICODE(String name, String value) {
+            int rep = VBVMR_SetParameterStringW.Invoke(name, Marshal.StringToHGlobalUni(value));
+            if (rep == 0) return;
+            if (rep == -1) throw new ArgumentException("Unknown error");
+            if (rep == -2) throw new ConnectionException("No server");
+            if (rep == -3) throw new ArgumentException("Unknown parametter");
+            throw new Exception("Unknown error");
+        }
+        public void SetParameterScriptASCII(String script) {
+            int rep = VBVMR_SetParameters.Invoke(Marshal.StringToHGlobalAnsi(script));
+            if (rep > 0) throw new ArgumentException("Error in script, line: "+rep.ToString());
+            if (rep == 0) return;
+            if (rep == -1) throw new ArgumentException("Unknown error");
+            if (rep == -2) throw new ConnectionException("No server");
+            if (rep == -3) throw new Exception("Unexpected error");
+            if (rep == -4) throw new Exception("Unexpected error");
+            throw new Exception("Unknown error");
+        }
+        public void SetParameterScriptUNICODE(String script) {
+            int rep = VBVMR_SetParametersW.Invoke(Marshal.StringToHGlobalUni(script));
+            if (rep > 0) throw new ArgumentException("Error in script, line: " + rep.ToString());
+            if (rep == 0) return;
+            if (rep == -1) throw new ArgumentException("Unknown error");
+            if (rep == -2) throw new ConnectionException("No server");
+            if (rep == -3) throw new Exception("Unexpected error");
+            if (rep == -4) throw new Exception("Unexpected error");
+            throw new Exception("Unknown error");
+        }
+
+
     }
 }

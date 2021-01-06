@@ -28,11 +28,14 @@ namespace OSC2MEETER {
 
             Console.WriteLine("Successfully connect to " + remote.GetVMType() + " version: " + remote.GetVMVersion());
             Console.WriteLine(remote.GetParameterFloat("Strip[0].gain"));
-            Console.WriteLine(remote.GetParameterStringA("Bus[0].device.name"));
+            Console.WriteLine(remote.GetParameterStringASCII("Strip[0].Label"));
 
-            while(true){ 
+            remote.SetParameterFloat("Bus[0].gain", 0);
+            remote.SetParameterStringASCII("Strip[1].Label", "TEST");
+            remote.SetParameterStringUNICODE("Strip[2].Label", "TEST😊");
+            while (true){ 
                 remote.IsParametersDirty();
-                Console.WriteLine(remote.getLevel(VoicemeeterLevelType.OUTPUT, VoicemeeterChannels.VOICEMEETER_POATATO_OUTPUT_A1_01));
+                Console.WriteLine(remote.GetLevel(VoicemeeterLevelType.OUTPUT, VoicemeeterChannels.VOICEMEETER_POATATO_OUTPUT_A1_01));
                 System.Threading.Thread.Sleep(10);
             }
 
