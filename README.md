@@ -10,7 +10,7 @@ The `VoicemeeterRemote.cs` file can be copied to any project and used as wrapper
 | Send / Recv Fader postion         | ✅ |
 | Send / Recv Mute                  | ✅ |
 | Recv strip name for inputs        | ✅ |
-| Command line options              | ❌ (Hardcoded send IP address) |
+| Command line options              | ✅ |
 
 | Voicemeeter Remote API Wrapper TodoList      | Status |
 |----------------------------------------------|-----|
@@ -20,5 +20,9 @@ The `VoicemeeterRemote.cs` file can be copied to any project and used as wrapper
 | AudioCallback                                | ❌ |
 | MacroButtons                                 | ❌ |
 
+## Dependencies
+ - https://github.com/ValdemarOrn/SharpOSC (download dll)
+ - https://github.com/commandlineparser/commandline (nuget)
+ 
 ## Sreenshots of the TouchOSC layout
 <img src="https://data.thestaticturtle.fr/ShareX/2021/01/07/Screenshot_20210107-002952.jpg" width="200" /> <img src="https://data.thestaticturtle.fr/ShareX/2021/01/07/Screenshot_20210107-002857.jpg" width="200" /> <img src="https://data.thestaticturtle.fr/ShareX/2021/01/07/Screenshot_20210107-002958.jpg" width="200" />
